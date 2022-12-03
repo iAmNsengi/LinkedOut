@@ -8,6 +8,8 @@ const userSchema = new mongoose.Schema(
     profilePicture: { type: String, default: "" },
     bannerImg: { type: String, default: "" },
     headline: { type: String, default: "LinkedOut User" },
+    location: { type: String, default: "Earth" },
+    about: { type: String, default: "" },
   },
   { timestamps: true }
 );
