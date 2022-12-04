@@ -24,10 +24,11 @@ const userSchema = new mongoose.Schema(
       {
         school: String,
         fieldOfStudy: String,
-        startYear: String,
-        endYear: String,
+        startYear: Number,
+        endYear: Number,
       },
     ],
+    connections: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );
