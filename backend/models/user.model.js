@@ -10,6 +10,24 @@ const userSchema = new mongoose.Schema(
     headline: { type: String, default: "LinkedOut User" },
     location: { type: String, default: "Earth" },
     about: { type: String, default: "" },
+    skills: [String],
+    experience: [
+      {
+        title: String,
+        company: String,
+        startDate: Date,
+        endDate: Date,
+        description: String,
+      },
+    ],
+    education: [
+      {
+        school: String,
+        fieldOfStudy: String,
+        startYear: String,
+        endYear: String,
+      },
+    ],
   },
   { timestamps: true }
 );
