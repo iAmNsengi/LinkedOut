@@ -1,5 +1,7 @@
 import RegexCraft from "regexcraft";
 import User from "../models/user.model.js";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 export const signup = async (req, res) => {
   const validPassword = new RegexCraft()
@@ -29,12 +31,31 @@ export const signup = async (req, res) => {
         success: false,
       });
     if (!validName.testOne(name).isValid)
-      return res
-        .status(400)
-        .json({
-          message: "Name should have at least 3 letters and no number",
-          success: false,
-        });
+      return res.status(400).json({
+        message: "Name should have at least 3 letters and no number",
+        success: false,
+      });
+    const salt = await bcrypt.genSalt(10);
+    const newPassword = await bcrypt.hash(password, salt);
+
+    const newUser = new User({ name, username, email, password: newPassword });
+    await newUser.save();
+
+    const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, {
+      expiresIn: "2d",
+    });
+
+    res.cookie("jwt", token, {
+      httpOnly: true, // prevent XSS
+      secure: process.env.NODE_ENV === "production", // prevents man-in-the-middle-attacks
+      maximumAge: 2 * 24 * 60 * 60 * 1000,
+      sameSite: "strict", // prevent CSRF
+    });
+
+    // send confirmation email
+    return res
+      .status(201)
+      .json({ message: "User created successfully", success: true });
   } catch (error) {
     console.error("Error in signup ", error);
     return res.status(500).json(error.response.data.message);
