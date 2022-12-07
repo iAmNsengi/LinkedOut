@@ -58,12 +58,48 @@ export const signup = async (req, res) => {
       .json({ message: "User created successfully", success: true });
   } catch (error) {
     console.error("Error in signup ", error);
-    return res.status(500).json(error.response.data.message);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", success: false });
   }
 };
 
-export const login = (req, res) => {
-  res.send("login route");
+export const login = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const userExists = User.findOne({ username });
+    if (!userExists)
+      return res
+        .status(400)
+        .json({ message: "User not found", success: false });
+
+    const passwordIsCorrect = await bcrypt.compare(
+      password,
+      userExists.password
+    );
+    if (!passwordIsCorrect)
+      return res
+        .status(400)
+        .json({ message: "Invalid credentials", success: false });
+
+    const token = await jwt.sign(
+      { userId: userExists._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "2d" }
+    );
+    res.cookie("jwt", token, {
+      httpOnly: true,
+      sameSite: "strict",
+      maxAge: 2 * 24 * 60 ** 60 * 1000,
+      secure: process.env.NODE_ENV === "production",
+    });
+    return res
+      .status(200)
+      .json({ message: "Logged in successfully", success: true });
+  } catch (error) {
+    console.error("Error in login ", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 export const logout = (req, res) => {
