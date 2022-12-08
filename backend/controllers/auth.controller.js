@@ -71,7 +71,7 @@ export const login = async (req, res) => {
     if (!userExists)
       return res
         .status(400)
-        .json({ message: "User not found", success: false });
+        .json({ message: "Invalid credentials", success: false });
 
     const passwordIsCorrect = await bcrypt.compare(
       password,
@@ -87,12 +87,14 @@ export const login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "2d" }
     );
+
     res.cookie("jwt", token, {
       httpOnly: true,
       sameSite: "strict",
       maxAge: 2 * 24 * 60 ** 60 * 1000,
       secure: process.env.NODE_ENV === "production",
     });
+
     return res
       .status(200)
       .json({ message: "Logged in successfully", success: true });
@@ -103,5 +105,13 @@ export const login = async (req, res) => {
 };
 
 export const logout = (req, res) => {
-  res.send("logout route");
+  try {
+    res.clearCookie("jwt");
+    return res
+      .status(200)
+      .json({ message: "Logged out successfully", success: true });
+  } catch (error) {
+    console.error("Error in logout ", error);
+    res.status(500).json({ message: "Internal server error", success: false });
+  }
 };
