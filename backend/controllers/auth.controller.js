@@ -12,6 +12,11 @@ export const signup = async (req, res) => {
 
   try {
     const { name, username, email, password } = req.body;
+    if (!name.trim() || username.trim() || email.trim() || password)
+      return res
+        .status(400)
+        .json({ message: "All fields are required", success: false });
+
     const emailExists = await User.findOne({ email });
     if (emailExists)
       return res.status(400).json({
