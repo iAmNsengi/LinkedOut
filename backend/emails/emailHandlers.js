@@ -10,7 +10,10 @@ export const sendWelcomeEmail = async (email, name, profileUrl) => {
       html: createWelcomeEmailTemplate(name, profileUrl),
       category: "welcome",
     });
+
+    console.log("Welcome email sent successfully", res);
   } catch (error) {
     console.error("Error in sendWelcomeEmail ", error);
+    throw error;
   }
 };
