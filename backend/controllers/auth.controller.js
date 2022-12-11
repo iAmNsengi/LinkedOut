@@ -58,6 +58,13 @@ export const signup = async (req, res) => {
     });
 
     // send confirmation email
+    const profileUrl = `${process.env.CLIENT_URL}/profile/${newUser.username}`;
+
+    try {
+      await sendWelcomeEmail(newUser.email, newUser.name, profileUrl);
+    } catch (error) {
+      console.error("Error in sending Welcome email ", error);
+    }
     return res
       .status(201)
       .json({ message: "User created successfully", success: true });
