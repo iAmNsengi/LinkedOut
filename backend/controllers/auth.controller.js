@@ -61,10 +61,13 @@ export const signup = async (req, res) => {
     // send confirmation email
     const profileUrl = `${process.env.CLIENT_URL}/profile/${newUser.username}`;
 
+    console.log(newUser.email, "new user's email-----------");
+    console.log(newUser);
+
     try {
       await sendWelcomeEmail(newUser.email, newUser.name, profileUrl);
     } catch (error) {
-      console.error("Error in sending Welcome email ", error);
+      console.error("Error in sending Welcome email ");
     }
     return res
       .status(201)
