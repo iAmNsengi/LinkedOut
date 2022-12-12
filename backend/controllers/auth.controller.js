@@ -2,17 +2,18 @@ import RegexCraft from "regexcraft";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { sendWelcomeEmail } from "../emails/emailHandlers.js";
 
 export const signup = async (req, res) => {
   const validPassword = new RegexCraft()
     .hasMinLength(6)
     .hasNumber(1)
     .hasSpecialCharacter(1);
-  const validName = new RegexCraft().hasLetter(3).hasNumber(0);
+  const validName = new RegexCraft().hasLetter(3).hasNoNumber();
 
   try {
     const { name, username, email, password } = req.body;
-    if (!name.trim() || username.trim() || email.trim() || password)
+    if (!name || !username || !email || !password)
       return res
         .status(400)
         .json({ message: "All fields are required", success: false });
