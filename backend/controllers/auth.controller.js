@@ -58,9 +58,9 @@ export const signup = async (req, res) => {
       sameSite: "strict", // prevent CSRF
     });
 
-    // send confirmation email
     const profileUrl = `${process.env.CLIENT_URL}/profile/${newUser.username}`;
 
+    // send confirmation email
     try {
       await sendWelcomeEmail(newUser.email, newUser.name, profileUrl);
     } catch (error) {
