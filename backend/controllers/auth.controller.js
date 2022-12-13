@@ -61,9 +61,6 @@ export const signup = async (req, res) => {
     // send confirmation email
     const profileUrl = `${process.env.CLIENT_URL}/profile/${newUser.username}`;
 
-    console.log(newUser.email, "new user's email-----------");
-    console.log(newUser);
-
     try {
       await sendWelcomeEmail(newUser.email, newUser.name, profileUrl);
     } catch (error) {
@@ -83,7 +80,14 @@ export const signup = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { username, password } = req.body;
-    const userExists = User.findOne({ username });
+    if (!username || !password)
+      return res.status(400).json({
+        message: "Username and password fields are required",
+        success: false,
+      });
+
+    const userExists = await User.findOne({ username });
+
     if (!userExists)
       return res
         .status(400)
@@ -107,7 +111,7 @@ export const login = async (req, res) => {
     res.cookie("jwt", token, {
       httpOnly: true,
       sameSite: "strict",
-      maxAge: 2 * 24 * 60 ** 60 * 1000,
+      maxAge: 2 * 24 * 60 * 60 * 1000,
       secure: process.env.NODE_ENV === "production",
     });
 
