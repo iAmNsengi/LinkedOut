@@ -34,7 +34,50 @@ export const getPublicProfile = async (req, res) => {
 
     return res.status(200).json(user);
   } catch (error) {
-    console.error("Error in getSuggestedConnections ", error);
+    console.error("Error in getPublic profile ", error);
+    return res.status(500).json({
+      message: "An internal server error occured, Try again later",
+      success: false,
+    });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const allowedFields = [
+      "name",
+      "headline",
+      "about",
+      "location",
+      "profilePicture",
+      "bannerImg",
+      "skills",
+      "experience",
+      "education",
+    ];
+    const updatedData = {};
+
+    const fieldsToUpdate = Object.keys(req.body);
+    if (!fieldsToUpdate.every((field) => allowedFields.includes(field))) {
+      return res.status(400).json({
+        message: `You are only allowed to update ${allowedFields.join(",")}`,
+      });
+    }
+
+    for (const field of allowedFields) {
+      if (req.body[field]) {
+        updatedData[field] = req.body[field];
+      }
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { $set: updatedData },
+      { new: true }
+    ).select("-password");
+    return res.status(200).json(user);
+  } catch (error) {
+    console.error("Error in updateProfile ", error);
     return res.status(500).json({
       message: "An internal server error occured, Try again later",
       success: false,
