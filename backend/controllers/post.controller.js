@@ -26,9 +26,26 @@ export const createPost = async (req, res) => {
       const res = await cloudinary.uploader.upload(image);
       uploadedImage = res.secure_url;
     }
-    const post = new Post({ author: req.user, content, image: uploadedImage });
+    const post = new Post({
+      author: req.user._id,
+      content,
+      image: uploadedImage,
+    });
     await post.save();
     return res.status(201).json(post);
+  } catch (error) {
+    console.error("Error in createPost ", error);
+    return res.status(500).json({
+      message: `An internal server error occurred, ${error.message}`,
+    });
+  }
+};
+
+export const deletePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Post.findOneAndDelete(id);
+    return res.status(200).json({ message: "Post deleted successfully" });
   } catch (error) {
     console.error("Error in createPost ", error);
     return res.status(500).json({
