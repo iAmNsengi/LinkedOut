@@ -1,3 +1,4 @@
+import cloudinary from "../lib/cloudinary.js";
 import Post from "../models/post.model.js";
 
 export const getFeedPosts = async (req, res) => {
@@ -7,12 +8,31 @@ export const getFeedPosts = async (req, res) => {
       .populate("comments.user", "name profilePicture")
       .sort({ createdAt: -1 });
 
-    req.status(200).json(posts);
+    return res.status(200).json(posts);
   } catch (error) {
     console.error("Error occurred in getFeedPosts ", error);
     return res.status(500).json({
       message: "An internal server error occurred, Please try again later",
       success: false,
+    });
+  }
+};
+
+export const createPost = async (req, res) => {
+  try {
+    const { content, image } = req.body;
+    let uploadedImage = "";
+    if (image) {
+      const res = await cloudinary.uploader.upload(image);
+      uploadedImage = res.secure_url;
+    }
+    const post = new Post({ author: req.user, content, image: uploadedImage });
+    await post.save();
+    return res.status(201).json(post);
+  } catch (error) {
+    console.error("Error in createPost ", error);
+    return res.status(500).json({
+      message: `An internal server error occurred, ${error.message}`,
     });
   }
 };
