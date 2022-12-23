@@ -44,10 +44,20 @@ export const createPost = async (req, res) => {
 export const deletePost = async (req, res) => {
   try {
     const { id } = req.params;
-    await Post.findOneAndDelete(id);
+    const post = await Post.findById(id);
+    if (!post) return res.status(400).json({ message: "Post not found" });
+    if (post.author.toString() !== req.user._id.toString())
+      return res
+        .status(400)
+        .json({ message: "You are not authorized to delete this post" });
+    if (post.image) {
+      //   we delete it also from cloudinary
+    }
+
+    await Post.findByIdAndDelete(post.id);
     return res.status(200).json({ message: "Post deleted successfully" });
   } catch (error) {
-    console.error("Error in createPost ", error);
+    console.error("Error in deletePost ", error);
     return res.status(500).json({
       message: `An internal server error occurred, ${error.message}`,
     });

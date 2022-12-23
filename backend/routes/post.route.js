@@ -10,6 +10,6 @@ const router = express.Router();
 
 router.get("/", protectedRoute, getFeedPosts);
 router.post("/create", protectedRoute, createPost);
-router.post("/delete/:id", protectedRoute, deletePost);
+router.delete("/delete/:id", protectedRoute, deletePost);
 
 export default router;
