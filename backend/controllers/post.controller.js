@@ -56,8 +56,8 @@ export const deletePost = async (req, res) => {
         post.image.split("/").pop().split(".")[0]
       );
     }
-
     await Post.findByIdAndDelete(post.id);
+
     return res.status(200).json({ message: "Post deleted successfully" });
   } catch (error) {
     console.error("Error in deletePost ", error);
@@ -100,7 +100,7 @@ export const createComment = async (req, res) => {
         $push: { comments: { user: req.user._id, content: comment } },
       },
       { new: true }
-    );
+    ).populate("author", "name email username headline profilePicture");
     return res.status(200).json(postWithComment);
   } catch (error) {
     console.error("Error in getPostById ", error);
