@@ -70,13 +70,38 @@ export const deletePost = async (req, res) => {
 export const getPostById = async (req, res) => {
   try {
     const { id } = req.params;
-    const post = await Post.findById(id);
+    const post = await Post.findById(id)
+      .populate("author", "name username profilePicture headline")
+      .populate("comments.user", "name profilePicture username headline");
     if (!post)
       return res
         .status(400)
         .json({ message: "Post with given id was not found" });
 
     return res.status(200).json(post);
+  } catch (error) {
+    console.error("Error in getPostById ", error);
+    return res.status(500).json({
+      message: `An internal server error occurred, ${error.message}`,
+    });
+  }
+};
+
+export const createComment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { comment } = req.body;
+    const post = await Post.findById(id);
+    if (!post) return res.status(400).json({ message: "Post not found" });
+
+    const postWithComment = await Post.findByIdAndUpdate(
+      id,
+      {
+        $push: { comments: { user: req.user._id, content: comment } },
+      },
+      { new: true }
+    );
+    return res.status(200).json(postWithComment);
   } catch (error) {
     console.error("Error in getPostById ", error);
     return res.status(500).json({
