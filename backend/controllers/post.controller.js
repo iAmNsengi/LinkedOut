@@ -167,7 +167,7 @@ export const sendCommentNotification = async (
   }
 };
 
-export const likeComment = async () => {
+export const likeComment = async (req, res) => {
   try {
     const { id } = req.params;
     const post = await Post.findById(id);
@@ -180,18 +180,21 @@ export const likeComment = async () => {
       await post.save();
       return res.status(200).json({ message: "Post disliked successfully" });
     }
-    if (post.author.toStrin() !== req.user._id.toString()) {
-      post.likes.push(req.user._id);
 
+    post.likes.push(req.user._id);
+    await post.save();
+
+    if (post.author.toString() !== req.user._id.toString()) {
       const notification = new Notification({
         recipient: post.author,
         type: "like",
         relatedUser: req.user._id,
         relatedPost: post._id,
       });
-      await post.save();
-      return res.status(200).json({ message: "Post liked successfully" });
+      await notification.save();
     }
+
+    return res.status(200).json({ message: "Post liked successfully" });
   } catch (error) {
     console.error("Error in likeComment, ", error.message);
     return res
