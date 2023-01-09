@@ -166,3 +166,36 @@ export const sendCommentNotification = async (
     throw error;
   }
 };
+
+export const likeComment = async () => {
+  try {
+    const { id } = req.params;
+    const post = await Post.findById(id);
+    if (!post) return res.status(400).json({ message: "Post not found" });
+
+    if (post.likes.includes(req.user._id)) {
+      post.likes = post.likes.filter(
+        (userId) => userId.toString() !== req.user._id.toString()
+      );
+      await post.save();
+      return res.status(200).json({ message: "Post disliked successfully" });
+    }
+    if (post.author.toStrin() !== req.user._id.toString()) {
+      post.likes.push(req.user._id);
+
+      const notification = new Notification({
+        recipient: post.author,
+        type: "like",
+        relatedUser: req.user._id,
+        relatedPost: post._id,
+      });
+      await post.save();
+      return res.status(200).json({ message: "Post liked successfully" });
+    }
+  } catch (error) {
+    console.error("Error in likeComment, ", error.message);
+    return res
+      .status(500)
+      .json({ message: `An internal server error occurred, ${error.message}` });
+  }
+};

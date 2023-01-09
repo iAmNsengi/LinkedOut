@@ -6,6 +6,7 @@ import {
   deletePost,
   getFeedPosts,
   getPostById,
+  likeComment,
 } from "../controllers/post.controller.js";
 
 const router = express.Router();
@@ -15,6 +16,7 @@ router.post("/create", protectedRoute, createPost);
 
 router.get("/:id", protectedRoute, getPostById);
 router.post("/:id/comment", protectedRoute, createComment);
+router.post("/:id/like", protectedRoute, likeComment);
 
 router.delete("/delete/:id", protectedRoute, deletePost);
 
