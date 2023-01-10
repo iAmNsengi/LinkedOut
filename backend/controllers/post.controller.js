@@ -178,7 +178,9 @@ export const likeComment = async (req, res) => {
         (userId) => userId.toString() !== req.user._id.toString()
       );
       await post.save();
-      return res.status(200).json({ message: "Post disliked successfully" });
+      return res
+        .status(200)
+        .json({ message: "Post disliked successfully", post });
     }
 
     post.likes.push(req.user._id);
@@ -194,7 +196,7 @@ export const likeComment = async (req, res) => {
       await notification.save();
     }
 
-    return res.status(200).json({ message: "Post liked successfully" });
+    return res.status(200).json({ message: "Post liked successfully", post });
   } catch (error) {
     console.error("Error in likeComment, ", error.message);
     return res
