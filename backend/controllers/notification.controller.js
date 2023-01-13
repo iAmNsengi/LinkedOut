@@ -23,6 +23,10 @@ export const markNotificationAsRead = async (req, res) => {
     const notification = await Notification.findById(id);
     if (!notification)
       return res.status(400).json({ message: "Notification not found" });
+    if (notification.recipient.toString() !== req.user._id)
+      return res.status(400).json({
+        message: "You are not authorized to edit this notification",
+      });
 
     notification.read = true;
     await notification.save();
