@@ -1,5 +1,9 @@
 import express from "express";
 import { protectedRoute } from "../middlewares/auth.middleware.js";
+import {
+  getUserNotifications,
+  markNotificationAsRead,
+} from "../controllers/notification.controller.js";
 
 const router = express.Router();
 
