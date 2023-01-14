@@ -1,6 +1,7 @@
 import express from "express";
 import { protectedRoute } from "../middlewares/auth.middleware.js";
 import {
+  deleteNotification,
   getUserNotifications,
   markNotificationAsRead,
 } from "../controllers/notification.controller.js";
