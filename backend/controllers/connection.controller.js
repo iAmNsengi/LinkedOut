@@ -47,12 +47,21 @@ export const sendConnectionRequest = async (req, res) => {
 export const acceptConnectionRequest = async (req, res) => {
   try {
     const { requestId } = req.params;
-    const connectionRequestExists = await ConnectionRequest.findById(requestId);
-    if (!connectionRequestExists)
+    const connectionRequest = await ConnectionRequest.findById(requestId)
+      .populate("sender", "name email username")
+      .populate("recipient", "name username");
+
+    if (!connectionRequest)
       return res.status(400).json({ message: "Connection request not found" });
 
-    connectionRequestExists.status = "accepted";
-    await connectionRequestExists.save();
+    if (connectionRequest.status !== "pending")
+      return res
+        .status(400)
+        .json({ messge: "Connection request was already processed" });
+
+      connectionRequest.status = "accepted";
+      
+    await connectionRequest.save();
     return res
       .status(200)
       .json({ message: "Connection request accepted successfully" });
