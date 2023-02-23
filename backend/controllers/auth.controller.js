@@ -5,6 +5,9 @@ import jwt from "jsonwebtoken";
 import { sendWelcomeEmail } from "../emails/emailHandlers.js";
 
 export const signup = async (req, res) => {
+  const session = await User.startSession();
+  session.startTransaction();
+
   const validPassword = new RegexCraft()
     .hasMinLength(6)
     .hasNumber(1)
@@ -18,13 +21,13 @@ export const signup = async (req, res) => {
         .status(400)
         .json({ message: "All fields are required", success: false });
 
-    const emailExists = await User.findOne({ email });
+    const emailExists = await User.findOne({ email }).session(session);
     if (emailExists)
       return res.status(400).json({
         message: "User with given email already exists",
         success: false,
       });
-    const userNameExists = await User.findOne({ username });
+    const userNameExists = await User.findOne({ username }).session(session);
     if (userNameExists)
       return res
         .status(400)
@@ -66,14 +69,20 @@ export const signup = async (req, res) => {
     } catch (error) {
       console.error("Error in sending Welcome email ");
     }
+
+    // commit transaction if everything succeeded
+    await session.commitTransaction();
     return res
       .status(201)
       .json({ message: "User created successfully", success: true });
   } catch (error) {
+    await session.abortTransaction();
     console.error("Error in signup ", error);
     return res
       .status(500)
       .json({ message: "Internal server error", success: false });
+  } finally {
+    session.endSession();
   }
 };
 
