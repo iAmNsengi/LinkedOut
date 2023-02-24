@@ -1,5 +1,6 @@
 import express from "express";
 import { protectedRoute } from "../middlewares/auth.middleware";
+import { acceptConnectionRequest, sendConnectionRequest } from "../controllers/connection.controller";
 
 const router = express.Router();
 

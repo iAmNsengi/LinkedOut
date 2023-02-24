@@ -1,5 +1,5 @@
-import ConnectionRequest from "../models/connectionRequest";
-import User from "../models/user.model";
+import ConnectionRequest from "../models/connectionRequest.js";
+import User from "../models/user.model.js";
 
 export const sendConnectionRequest = async (req, res) => {
   try {
@@ -46,10 +46,14 @@ export const sendConnectionRequest = async (req, res) => {
 
 export const acceptConnectionRequest = async (req, res) => {
   try {
+    const session = ConnectionRequest.startSession();
+    session.startTransaction();
+
     const { requestId } = req.params;
     const connectionRequest = await ConnectionRequest.findById(requestId)
       .populate("sender", "name email username")
-      .populate("recipient", "name username");
+      .populate("recipient", "name username")
+      .session(session);
 
     if (!connectionRequest)
       return res.status(400).json({ message: "Connection request not found" });
@@ -57,18 +61,25 @@ export const acceptConnectionRequest = async (req, res) => {
     if (connectionRequest.status !== "pending")
       return res
         .status(400)
-        .json({ messge: "Connection request was already processed" });
+        .json({ message: "Connection request was already processed" });
 
-      connectionRequest.status = "accepted";
-      
-    await connectionRequest.save();
+    connectionRequest.status = "accepted";
+
+    await connectionRequest.save({ session });
+
+    await ConnectionRequest.deleteOne({ _id: requestId }).session(session);
+
+    await session.commitTransaction();
     return res
       .status(200)
       .json({ message: "Connection request accepted successfully" });
   } catch (error) {
+    await session.abortTransaction();
     console.error("Error in send acceptConnectionRequest, ", error);
     return res
       .status(500)
       .json({ message: `An internal server error occurred, ${error.message}` });
+  } finally {
+    session.endSession();
   }
 };

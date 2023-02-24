@@ -48,7 +48,7 @@ export const signup = async (req, res) => {
     const newPassword = await bcrypt.hash(password, salt);
 
     const newUser = new User({ name, username, email, password: newPassword });
-    await newUser.save();
+    await newUser.save({ session });
 
     const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, {
       expiresIn: "2d",
@@ -72,6 +72,7 @@ export const signup = async (req, res) => {
 
     // commit transaction if everything succeeded
     await session.commitTransaction();
+
     return res
       .status(201)
       .json({ message: "User created successfully", success: true });
