@@ -46,7 +46,7 @@ export const sendConnectionRequest = async (req, res) => {
 
 export const acceptConnectionRequest = async (req, res) => {
   try {
-    const session = ConnectionRequest.startSession();
+    const session = await ConnectionRequest.startSession();
     session.startTransaction();
 
     const { requestId } = req.params;
@@ -66,10 +66,9 @@ export const acceptConnectionRequest = async (req, res) => {
     connectionRequest.status = "accepted";
 
     await connectionRequest.save({ session });
-
     await ConnectionRequest.deleteOne({ _id: requestId }).session(session);
-
     await session.commitTransaction();
+
     return res
       .status(200)
       .json({ message: "Connection request accepted successfully" });
