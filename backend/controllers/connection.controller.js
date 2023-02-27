@@ -58,6 +58,12 @@ export const acceptConnectionRequest = async (req, res) => {
     if (!connectionRequest)
       return res.status(400).json({ message: "Connection request not found" });
 
+    if (connectionRequest.recipient.toString() !== userId.toString())
+      return res.status(400).json({
+        message:
+          "You can't update a connection status where you are not the receiver",
+      });
+
     if (connectionRequest.status !== "pending")
       return res
         .status(400)
@@ -97,6 +103,11 @@ export const rejectConnectionRequest = async (req, res) => {
         message:
           "You can't update a connection status where you are not the receiver",
       });
+
+    if (connectionRequest.status !== "pending")
+      return res
+        .status(400)
+        .json({ message: "Connection request was already processed" });
 
     connectionRequest.status = "rejected";
 
