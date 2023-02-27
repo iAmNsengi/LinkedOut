@@ -82,3 +82,33 @@ export const acceptConnectionRequest = async (req, res) => {
     session.endSession();
   }
 };
+
+export const rejectConnectionRequest = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const userId = req.user._id;
+
+    const connectionRequest = await ConnectionRequest.findById(requestId);
+    if (!connectionRequest)
+      return res.status(400).json({ message: "Connection request not found" });
+
+    if (connectionRequest.recipient.toString() !== userId.toString())
+      return res.status(400).json({
+        message:
+          "You can't update a connection status where you are not the receiver",
+      });
+
+    connectionRequest.status = "rejected";
+
+    await connectionRequest.save();
+
+    return res
+      .status(200)
+      .json({ message: "Connection requested rejected successfully" });
+  } catch (error) {
+    console.error("Error in rejectConnectionRequest, ", error);
+    return res
+      .status(500)
+      .json({ message: `An internal server error occurred, ${error.message}` });
+  }
+};
